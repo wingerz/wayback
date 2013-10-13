@@ -3,7 +3,7 @@
   (:import java.io.File)
   (:import java.util.Date)
   (:import java.util.GregorianCalendar)
-  )
+  (:gen-class))
 
 (def ms-diff
   (-
@@ -65,11 +65,25 @@
     (sort-by :timestamp (get-post-data dir)))))
 
 (defn format-post
-  [post]
+  [post domain]
   (def ymd (java.text.SimpleDateFormat. "yyyy MMM d"))
   (format
-   "* [%s] %s : %s"
+   "* [%s] [%s] : %s | %s"
    (.format ymd (Date. (:timestamp post)))
+   (str "http://" domain "/" (:slug post))
    (:title post)
-   (:excerpt post)
-   ))
+   (:excerpt post)))
+
+(defn output-str-for-site
+  [dir domain]
+  (clojure.string/join
+   "\n"
+   (map (fn [x] (format-post x domain))
+        (get-closest-posts dir))))
+
+#(println
+ (output-str-for-site "data/liao-yung" "liao-yung.posthaven.com")
+ (output-str-for-site "data/milni" "milni.posthaven.com"))
+
+(defn -main [& args]
+  (println (output-str-for-site (first args) (second args))))
