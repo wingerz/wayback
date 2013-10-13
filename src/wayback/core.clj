@@ -24,12 +24,10 @@
    (.replace "<excerpt:" "<excerpt_")
    (.replace "</excerpt:" "</excerpt_")))
 
-
 (defn date-str-to-timestamp
   [date-str]
   (def df (java.text.SimpleDateFormat. "EEE MMM d HH:mm:ss zzz yyyy"))
   (.getTime (.parse df date-str)))
-
 
 (defn retrieve-post-data
   [xml-data]
@@ -47,22 +45,21 @@
       ms-diff
       ( * 7 24 3600 1000)))
 
-
 (defn get-post
   [filename]
   (-> filename slurp munge-namespace retrieve-post-data)
   )
 
-(defn get-post-data
+(defn get-all-posts
   [dir]
   (map get-post (get-post-filenames dir)))
 
 (defn get-closest-posts
-  [dir]
+  [dir timestamp]
   (take 5
    (filter
-    (fn [x] (> (:timestamp x) (get-desired-timestamp)))
-    (sort-by :timestamp (get-post-data dir)))))
+    (fn [x] (> (:timestamp x) timestamp))
+    (sort-by :timestamp (get-all-posts dir)))))
 
 (defn format-post
   [post domain]
@@ -79,7 +76,7 @@
   (clojure.string/join
    "\n"
    (map (fn [x] (format-post x domain))
-        (get-closest-posts dir))))
+        (get-closest-posts dir (get-desired-timestamp)))))
 
 #(println
  (output-str-for-site "data/liao-yung" "liao-yung.posthaven.com")
