@@ -17,22 +17,29 @@
 
 (defn munge-namespace
   [some-string]
-  (clojure.string/replace
-   (clojure.string/replace some-string "<wp:" "<wp_")
-   "</wp:" "</wp_"))
+  (->
+   some-string
+   (.replace "<wp:" "<wp_")
+   (.replace "</wp:" "</wp_")
+   (.replace "<excerpt:" "<excerpt_")
+   (.replace "</excerpt:" "</excerpt_")))
+
+
+(defn date-str-to-timestamp
+  [date-str]
+  (def df (java.text.SimpleDateFormat. "EEE MMM d HH:mm:ss zzz yyyy"))
+  (.getTime (.parse df date-str)))
+
 
 (defn retrieve-post-data
   [xml-data]
   {
    :timestamp (date-str-to-timestamp ($x:text "//pubDate" xml-data))
    :title ($x:text "//title" xml-data)
+   :excerpt ($x:text "//excerpt_encoded" xml-data)
+   :slug ($x:text "//wp_post_name" xml-data)
    :id ($x:text "//wp_post_id" xml-data)
    })
-
-(defn date-str-to-timestamp
-  [date-str]
-  (def df (java.text.SimpleDateFormat. "EEE MMM d HH:mm:ss zzz yyyy"))
-  (.getTime (.parse df date-str)))
 
 (defn get-desired-timestamp
   []
@@ -61,6 +68,8 @@
   [post]
   (def ymd (java.text.SimpleDateFormat. "yyyy MMM d"))
   (format
-   "* [%s] %s"
+   "* [%s] %s : %s"
    (.format ymd (Date. (:timestamp post)))
-   (:title post)))
+   (:title post)
+   (:excerpt post)
+   ))
