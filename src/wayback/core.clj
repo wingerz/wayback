@@ -41,9 +41,8 @@
 
 (defn get-desired-timestamp
   []
-  (-  (.getTime (Date.))
-      ms-diff
-      ( * 7 24 3600 1000)))
+  (- (.getTime (Date.))
+      ms-diff))
 
 (defn get-post
   [filename]
@@ -56,10 +55,17 @@
 
 (defn get-closest-posts
   [dir timestamp]
-  (take 5
-   (filter
-    (fn [x] (> (:timestamp x) timestamp))
-    (sort-by :timestamp (get-all-posts dir)))))
+  (let
+      [posts (sort-by :timestamp (get-all-posts dir))]
+    (concat
+     (take-last 5
+                (filter
+                 (fn [x] (< (:timestamp x) timestamp))
+                 posts))
+     (take 5
+           (filter
+            (fn [x] (>= (:timestamp x) timestamp))
+            posts)))))
 
 (defn format-post
   [post domain]
