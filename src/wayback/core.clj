@@ -71,11 +71,12 @@
   [post domain]
   (def ymd (java.text.SimpleDateFormat. "yyyy MMM d"))
   (format
-   "* [%s] [%s] : %s | %s"
+   "%s: %s | %s\n%s"
    (.format ymd (Date. (:timestamp post)))
-   (str "http://" domain "/" (:slug post))
    (:title post)
-   (:excerpt post)))
+   (:excerpt post)
+   (str "http://" domain "/" (:slug post))
+   ))
 
 (defn output-str-for-site
   [dir domain]
